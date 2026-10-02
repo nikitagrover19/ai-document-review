@@ -4,6 +4,8 @@ A review interface for the AI findings on the Northwind / Brightline vendor agre
 
 Built with React 19, TypeScript, Vite and Zustand. There is no annotation or UI library; the highlighting, margin cards and diff are written in this repo.
 
+**Live demo:** https://ai-document-review-xi.vercel.app/
+
 ## Running it
 
 ```bash
