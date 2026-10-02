@@ -1,108 +1,76 @@
-# AI Document Review
+# AI document review
 
-A review interface for AI findings on a vendor agreement. Findings appear in the margin next to the text they refer to. Reviewers can accept, dismiss, or comment on findings, apply suggested edits as a redline, and finish with a summary.
+A review interface for the AI findings on the Northwind / Brightline vendor agreement. Findings sit in the margin next to the text they refer to. A reviewer can accept, dismiss or comment on each one, apply a suggested edit as a redline, and finish with a summary.
 
-## Run it
+Built with React 19, TypeScript, Vite and Zustand. There is no annotation or UI library; the highlighting, margin cards and diff are written in this repo.
+
+## Running it
 
 ```bash
 npm install
-npm run dev        # http://localhost:5173
-npm test           # vitest (domain, store, components)
+npm run dev          # http://localhost:5173
+npm test             # vitest: domain, store and component tests
 npm run typecheck
 npm run build
 ```
 
-Demo switches for the fake service:
+I developed and checked this on Node 22. The contract and the findings are in `data/`, and a small fake service (`src/services/reviewService.ts`) loads them with a delay so the loading state is visible.
 
-- `?delay=2500` - slow
-- `?fail=1` - error + Retry
-- `?empty=1` - no findings
+Query parameters for the fake service:
 
-Keyboard shortcuts:
+- `?delay=2500` slows the load (default is 700 ms, capped at 10 s)
+- `?fail=1` makes the load fail, which shows the error screen with a Retry button
+- `?empty=1` returns no findings
 
-- `j` / `k` - next / previous unresolved
-- `a` - accept
-- `d` - dismiss
-- `u` - undo
+Keyboard shortcuts, also listed in the Shortcuts menu:
 
-These are also listed in the Shortcuts menu.
+| Key | Action |
+|-----|--------|
+| `j` / `k` | next / previous unresolved finding |
+| `a` | accept the open finding |
+| `d` | dismiss it |
+| `u` | undo its decision |
+
+The shortcuts are ignored while typing, with Ctrl/Cmd/Alt held, and while the summary dialog is open.
 
 ## What it does
 
-### Context
+**Document and findings together.** Each paragraph is one row: text on the left, the cards for its findings on the right. Clicking a highlight opens its card, and clicking a card brings its text into view. Only the other side scrolls. Findings with no anchor (such as f-09, a missing clause) show as "Whole document" cards at the top.
 
-One row per paragraph, with the text on the left and its finding cards on the right. Click a highlight to open its card, or click a card to see its text. Only the other side scrolls.
+**Overview.** The top bar shows progress (decided out of total) and a risk score. Chips show counts by severity and by status, and a row of squares and a slim mini-map at the edge show where the findings are. The risk score runs from 0 to 100. Each undecided finding adds its severity weight (high 3, medium 2, low 1) times the agent's confidence, divided by the worst case, so it falls as findings are decided.
 
-### At a glance
+**Focus.** Filters for severity, status and category. "Next unresolved" visits all High findings first, then Medium, then Low, in document order within each group. A switch changes this to plain document order.
 
-Shows severity, status, and category counts, along with a mini-map of finding locations and a progress bar for decided findings.
+**Acting on findings.** Accept, dismiss, comment, undo. A comment alone does not count as a decision. Everything is saved to localStorage under a key made from the document id and the agent name and version, so decisions from one agent run are never applied to another. If storage is blocked the app still works and shows a "Not saved" chip.
 
-### Focus
+**Suggested edits.** Each suggestion is shown as a word-level redline inside the full sentence it changes, because the agent's edits are fragments that hide how they join the surrounding text. Accepting with "Accept & apply edit" puts the change into the document view as struck-out old words followed by the new ones. Only findings with a verified anchor inside one paragraph can be applied. Two edits that cover the same words cannot both be applied, and any applied edit can be reverted.
 
-Filters are available for severity, status, and category. "Next unresolved" goes through High findings first, then moves from top to bottom. There is also a document-order switch.
+**Finishing.** "Finish review" opens a summary that warns about undecided findings, High ones first, but does not block finishing. It can download a Markdown file with the decisions, comments and the clauses as they read after the applied edits. Reset is in the same dialog.
 
-### Actions
+## Design decisions
 
-Findings can be accepted, dismissed, commented on, or undone. Changes are saved in the browser using document + agent version as the key. Reset is available from the summary.
+The longer reasoning, with the alternatives, is in `docs/notes.md`.
 
-### Suggested edits
+**The quote decides, offsets are a hint.** Every anchor is checked against its quote and classed as exact, repaired by searching for the quote, unresolved, or whole-document. Text that could not be verified is never highlighted; the card shows the agent's quote instead. This matters in the sample data: the saved offsets for f-20 would highlight the wrong words (the quote is at 168-232, the offsets say 125-189). I did not use fuzzy matching, because legal text repeats itself and a fuzzy match would sometimes land on the wrong clause.
 
-Suggested edits are shown as a redline inside the full sentence. Exact, single-paragraph edits can be applied.
+**Overlaps are handled by cutting the text.** Each paragraph is split at every highlight boundary, and each piece carries the ids of all findings covering it. Nested spans cannot express a partial overlap like f-04 / f-05, and rectangles drawn over the text break when the window is resized.
 
-The document keeps the original text unchanged. Conflicting edits are blocked, and every applied edit can be reverted.
+**One row per paragraph.** Putting the paragraph and its cards in the same row keeps them aligned with no measuring or collision code. I considered two separate panes (the eye travels too far in a long document) and absolutely positioned cards (needs collision handling).
 
-### Finish
+**Derived values are not stored.** The store (Zustand) holds decisions, comments, the selection, the filters and the list of applied edit ids. Progress, risk, visible findings, highlight pieces, redlines and conflicts are computed from those.
 
-The summary dialog warns about undecided findings, with High findings first. A Markdown download is available and includes the revised clauses.
+**The original text is never modified.** An applied edit is only a finding id in a list. Offsets always refer to the original paragraph, so applying an edit in one place cannot shift another. This is why f-13 and f-22, which share paragraph 4.3, can both be applied.
 
-## Key decisions
+**Accessibility.** Severity is shown by icon and word as well as colour. Removed and added text in the redline is struck through and underlined, and read out as "Removed" and "Added". The summary uses a native `<dialog>`. Accept, dismiss and undo changes are announced through a live region. I checked the text colour pairs in `src/styles/tokens.css` by calculation; all reach 4.5:1 except muted text on the grey page background, which is 4.46:1.
 
-The alternatives considered for these decisions are in `docs/notes.md`.
+## What I prioritised, cut, and would do next
 
-1. **The quote is the truth, offsets are a hint.**  
-   Each anchor is checked against its quote: exact, repaired by search, unresolved, or whole-document. Unverified text is never highlighted. Real example: f-20's saved offsets would have highlighted the wrong words.
+Prioritised: anchors that can be trusted, a quick review loop (cards, Next, filters, shortcuts), handling the messy parts of the data (f-02 spans two paragraphs, f-09 has no anchor, f-20 has wrong offsets, f-04 / f-05 overlap), and tests for the domain logic. There are 256 tests in 20 files.
 
-2. **Overlaps are split at every highlight edge.**  
-   The text is cut into pieces at every highlight boundary. This handles partial overlaps such as f-04/f-05, which nested spans cannot.
+Cut: virtualization for very long documents, the LLM follow-up chat, export of a full revised document (the Markdown summary contains only the changed clauses), and syncing between tabs (the last write wins).
 
-3. **Margin cards use one row per paragraph.**  
-   This keeps the cards aligned without measuring or collision maths.
+Assumptions: desktop first, with cards stacking under their paragraph on narrow screens. A comment is not a decision. Highlights are a mouse shortcut and are not tab stops; the keyboard route is through the cards and Next / Previous.
 
-4. **Zustand stores state; calculated values are derived.**  
-   Progress, filters, highlight pieces, redlines, and conflicts are derived rather than stored.
+Not tested: Firefox, and a screen reader (VoiceOver or NVDA). Performance was measured only for the domain functions, not for rendering; the numbers are in `docs/notes.md`.
 
-5. **Applying an edit never changes the original.**  
-   The store holds a list of finding ids. Offsets always refer to the original text, so edits in one paragraph do not shift edits in another.
-
-6. **Accessibility is built into the review flow.**  
-   Severity uses an icon, word, and colour. There is a computed contrast audit, native `<dialog>` support, focus handoff when a button replaces itself, and live-region announcements.
-
-## Priorities, cuts, next
-
-### Prioritised
-
-- Trustworthy anchors
-- A fast review loop with keyboard shortcuts, Next, and filters
-- Data robustness
-- A tested domain layer
-
-### Cut
-
-- Virtualization
-- An LLM follow-up chat
-- A full revised-document export
-- Cross-tab sync (last write wins)
-
-### Assumptions
-
-- Desktop first
-- A comment is not a decision
-- Highlights are mouse shortcuts; the keyboard path is the cards
-
-### With more time
-
-- Word-level diff inside the document redline
-- A rendering benchmark with 10k paragraphs and `content-visibility`
-- Drafts in their own store
-- A real screen-reader pass (VoiceOver/NVDA)
-- Firefox
+With more time: a word-level diff drawn inside the document instead of only on the card, a rendering benchmark at 10,000 paragraphs using `content-visibility`, a separate store for half-typed comments (every keystroke currently runs every row's selectors), and a screen-reader pass.
