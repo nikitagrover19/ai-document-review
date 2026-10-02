@@ -1,0 +1,91 @@
+/* Design tokens. To restyle the app, change values here only (no colour is written anywhere else).
+   Palette: calm "legal paper + forest green". No blue, purple, indigo or violet anywhere. */
+:root {
+  /* ---- palette ---- */
+  --header-bg: #f1f3ef; /* header + filter bar */
+  --page-bg: #e2e6e0; /* area around the document */
+  --paper: #fefefb; /* document sheet and finding card */
+  --ink: #1c2420; /* body text */
+  --ink-muted: #5b6b63; /* 5.0:1 on the header, 5.6:1 on paper, 4.5:1 on the page */
+  --border: #cbd2ca; /* decorative dividers */
+  --border-strong: #6b7b72; /* borders of controls: >= 3:1 on paper, header and page (WCAG 1.4.11) */
+  --on-primary: #ffffff;
+
+  --primary: #1e4d43; /* forest green: primary buttons, active chips, progress fill, selected card, focus ring */
+  --primary-hover: #173b33;
+  --primary-soft: #d5e6dc; /* pale green: progress track, "accepted" tint */
+
+  /* severity. The plain colour is for shapes, ticks and borders (3:1 on paper);
+     the -fg colour is for text (4.5:1 on its -bg). Severity is always shape + word too. */
+  --sev-high: #b3322f;
+  --sev-medium: #b9770e;
+  --sev-low: #5f7a6e;
+  --sev-high-fg: #b3322f;
+  --sev-medium-fg: #8a5508;
+  --sev-low-fg: #4f675b;
+  --sev-high-bg: #f8e6e4;
+  --sev-medium-bg: #f8edd3;
+  --sev-low-bg: #e6ece7;
+  --sev-high-border: #e3b3b0;
+  --sev-medium-border: #e6c98c;
+  --sev-low-border: #bccbc2;
+
+  /* highlights in the document text */
+  --highlight: #f7e38a;
+  --highlight-faded: color-mix(in srgb, var(--highlight) 38%, transparent); /* resolved findings */
+  --selection: color-mix(in srgb, var(--primary) 22%, transparent); /* text selection (replaces the browser's blue) */
+
+  /* suggested-change redline. Removed text is also struck through, added text underlined (never colour alone). */
+  --diff-del-bg: #f6d5d3;
+  --diff-del-text: #7a1f1d; /* 7.5:1 on its background */
+  --diff-add-bg: #d5e6dc;
+  --diff-add-text: #1b4a38; /* 7.8:1 on its background */
+
+  /* shadows and overlays, tinted with the ink colour */
+  --shadow-raised: 0 1px 2px rgba(28, 36, 32, 0.08), 0 1px 3px rgba(28, 36, 32, 0.12);
+  --shadow-sheet: 0 1px 2px rgba(28, 36, 32, 0.08), 0 8px 24px rgba(28, 36, 32, 0.08);
+  --shadow-dialog: 0 12px 40px rgba(28, 36, 32, 0.3);
+  --scrim: rgba(28, 36, 32, 0.45);
+
+  /* ---- legacy names, kept so existing rules keep working. They only point at the tokens above. ---- */
+  --color-bg: var(--page-bg);
+  --color-surface: var(--paper);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-text: var(--ink);
+  --color-text-muted: var(--ink-muted);
+  --color-accent: var(--primary);
+  --color-accent-soft: var(--primary-soft);
+  --color-focus: var(--primary);
+  --hl-selected-bg: var(--highlight);
+
+  /* type */
+  --font-ui: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-doc: 'Source Serif 4', 'Source Serif Pro', Georgia, Cambria, 'Times New Roman', serif;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-doc: 1.125rem; /* 18px document text */
+
+  /* spacing scale */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --transition: 150ms ease;
+
+  /* layout */
+  --doc-width: 42rem; /* the text column inside the sheet */
+  --sheet-pad: var(--space-6);
+  --sheet-width: calc(var(--doc-width) + var(--sheet-pad) * 2);
+  --margin-width: 21rem;
+  --topbar-height: 3.5rem;
+}
