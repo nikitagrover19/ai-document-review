@@ -65,12 +65,21 @@ The longer reasoning, with the alternatives, is in `docs/notes.md`.
 
 ## What I prioritised, cut, and would do next
 
-Prioritised: anchors that can be trusted, a quick review loop (cards, Next, filters, shortcuts), handling the messy parts of the data (f-02 spans two paragraphs, f-09 has no anchor, f-20 has wrong offsets, f-04 / f-05 overlap), and tests for the domain logic. There are 256 tests in 20 files.
+**Prioritised:** anchors that can be trusted, a quick review loop (cards, Next, filters, shortcuts), handling the messy parts of the data (f-02 spans two paragraphs, f-09 has no anchor, f-20 has wrong offsets, f-04 / f-05 overlap), and tests for the domain logic. There are 256 tests in 20 files.
 
-Cut: virtualization for very long documents, the LLM follow-up chat, export of a full revised document (the Markdown summary contains only the changed clauses), and syncing between tabs (the last write wins).
+**Cut:** virtualization for very long documents, the LLM follow-up chat, export of a full revised document (the Markdown summary contains only the changed clauses), and syncing between tabs (the last write wins).
 
-Assumptions: desktop first, with cards stacking under their paragraph on narrow screens. A comment is not a decision. Highlights are a mouse shortcut and are not tab stops; the keyboard route is through the cards and Next / Previous.
+**Assumptions:** desktop first, with cards stacking under their paragraph on narrow screens. A comment is not a decision. Highlights are a mouse shortcut and are not tab stops; the keyboard route is through the cards and Next / Previous.
 
-Not tested: Firefox, and a screen reader (VoiceOver or NVDA). Performance was measured only for the domain functions, not for rendering; the numbers are in `docs/notes.md`.
+**Not tested:** Firefox, and a screen reader (VoiceOver or NVDA). Performance was measured only for the domain functions, not for rendering; the numbers are in `docs/notes.md`.
 
-With more time: a word-level diff drawn inside the document instead of only on the card, a rendering benchmark at 10,000 paragraphs using `content-visibility`, a separate store for half-typed comments (every keystroke currently runs every row's selectors), and a screen-reader pass.
+**With more time:**
+- A word-level diff drawn inside the document instead of only on the card.
+- A rendering benchmark at 10,000 paragraphs using `content-visibility`.
+- A separate store for half-typed comments (every keystroke currently runs every row's selectors).
+- A screen-reader pass.
+- A tighter review header to reduce the vertical space used by the top controls.
+- Removing the duplicate finding-location navigation where the square strip and mini-map provide overlapping information.
+- Making the risk metric's meaning more explicit so it is clear that it represents remaining unresolved risk.
+- Making the finding navigation order more explicit in the UI.
+- A more compact document title and metadata area to give more space to the review surface.
